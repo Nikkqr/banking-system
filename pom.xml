@@ -9,9 +9,9 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>Presentation</module>
-        <module>Application</module>
-        <module>Data</module>
+        <module>bank-service</module>
+        <module>api-gateway</module>
+        <module>event-storage</module>
     </modules>
 
     <parent>
@@ -70,7 +70,6 @@
                 </configuration>
             </plugin>
         </plugins>
-
     </build>
 
 </project>
