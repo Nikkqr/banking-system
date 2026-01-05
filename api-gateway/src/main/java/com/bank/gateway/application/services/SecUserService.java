@@ -1,5 +1,7 @@
 package com.bank.gateway.application.services;
 
+import com.bank.gateway.application.dto.AccountDTO;
+import com.bank.gateway.application.dto.SecUserRequest;
 import com.bank.gateway.data.entities.*;
 import com.bank.gateway.data.repository.SecurityUserRepository;
 import org.springframework.http.ResponseEntity;
@@ -32,8 +34,8 @@ public class SecUserService implements UserClient {
         SecurityUser securityUser = new SecurityUser(userRequest.getName(), passwordEncoder.encode(userRequest.getPassword()),
                 userRequest.getRole());
         userRepository.createUser(securityUser);
-        String url = "http://localhost:8080/users";
-        UserRequest uReq = UserRequestCreator.createUserRequest(userRequest);
+        String url = "http://localhost:8081/users";
+        UserRequest uReq = new UserRequest(userRequest);
         ResponseEntity<String> response = restTemplate.postForEntity(url, uReq, String.class);
         return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
     }
@@ -54,25 +56,25 @@ public class SecUserService implements UserClient {
         }
 
         String query = params.isEmpty() ? "" : "?" + String.join("&", params);
-        String url = "http://localhost:8080/users/filter" + query;
+        String url = "http://localhost:8081/users/filter" + query;
 
         return restTemplate.getForEntity(url, String.class);
     }
 
     public ResponseEntity<String> getUserInfo(int id){
-        String url = "http://localhost:8080/users/{id}";
+        String url = "http://localhost:8081/users/{id}";
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class, id);
         return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
     }
 
     public ResponseEntity<String> getAccounts(){
-        String url = "http://localhost:8080/accounts/allAccounts";
+        String url = "http://localhost:8081/accounts/allAccounts";
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
         return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
     }
 
     public ResponseEntity<List<AccountDTO>> getAccounts(int id){
-        String url = "http://localhost:8080/accounts/allAccounts";
+        String url = "http://localhost:8081/accounts/allAccounts";
 
         ResponseEntity<AccountDTO[]> response = restTemplate.getForEntity(url, AccountDTO[].class);
 
@@ -84,7 +86,7 @@ public class SecUserService implements UserClient {
     }
 
     public ResponseEntity<String> accountById(int id, String type, String account){
-        String url = "http://localhost:8080/accounts/{id}/operation?type={type}";
+        String url = "http://localhost:8081/accounts/{id}/operation?type={type}";
         ResponseEntity<String> response = restTemplate.getForEntity(url, String.class, id, type);
         return ResponseEntity.status(response.getStatusCode()).body(account + " " + response.getBody());
     }

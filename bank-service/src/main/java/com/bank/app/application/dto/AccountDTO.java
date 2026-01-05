@@ -1,6 +1,6 @@
 package com.bank.app.application.dto;
 
-import com.bank.app.data.entities.Operation;
+import com.bank.app.data.entities.Account;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -19,16 +19,16 @@ public class AccountDTO {
 
     private int ownerId;
 
-    private List<Operation> operations;
+    private List<OperationDTO> operations = new ArrayList<>();
 
     public AccountDTO() {}
 
-    public AccountDTO(int id, Double balance, String login, int ownerId)
+    public AccountDTO(Account account)
     {
-        this.id = id;
-        this.balance = balance;
-        this.login = login;
-        this.ownerId = ownerId;
-        operations = new ArrayList<>();
+        id = account.getId();
+        balance = account.getBalance();
+        login = account.getLogin();
+        ownerId = account.getOwnerId();
+        operations = account.getOperationHistory().stream().map(OperationDTO::new).toList();
     }
 }

@@ -1,6 +1,6 @@
 package com.bank.gateway.application.services;
 
-import com.bank.gateway.data.entities.AccountDTO;
+import com.bank.gateway.application.dto.AccountDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -21,7 +21,7 @@ public class SecAccountService implements AccountClient{
     }
 
     public AccountDTO getAccountById(int id) {
-        String url = "http://localhost:8080/accounts/allAccounts";
+        String url = "http://localhost:8081/accounts/allAccounts";
         ResponseEntity<AccountDTO[]> response = restTemplate.getForEntity(url, AccountDTO[].class);
         Optional<AccountDTO> account = Arrays.stream(response.getBody())
                 .filter(a -> a.getId() == id)
@@ -31,13 +31,13 @@ public class SecAccountService implements AccountClient{
 
     public ResponseEntity<String> getUserInfo() {
         int userId = userClient.getCurrentUserId();
-        String url = "http://localhost:8080/users/{id}";
+        String url = "http://localhost:8081/users/{id}";
         return restTemplate.getForEntity(url, String.class, userId);
     }
 
     public ResponseEntity<List<AccountDTO>> getUserAccounts() {
         int userId = userClient.getCurrentUserId();
-        String url = "http://localhost:8080/accounts/allAccounts";
+        String url = "http://localhost:8081/accounts/allAccounts";
         ResponseEntity<AccountDTO[]> response = restTemplate.getForEntity(url, AccountDTO[].class);
         List<AccountDTO> accounts = Arrays.stream(response.getBody())
                 .filter(account -> account.getOwnerId() == userId)
@@ -47,13 +47,13 @@ public class SecAccountService implements AccountClient{
 
     public void addFriend(int id) {
         int userId = userClient.getCurrentUserId();
-        String url = "http://localhost:8080/users/{id1}/addFriend";
+        String url = "http://localhost:8081/users/{id1}/addFriend";
         restTemplate.put(url, id, userId);
     }
 
     public void removeFriend(int id) {
         int userId = userClient.getCurrentUserId();
-        String url = "http://localhost:8080/users/{id1}/deleteFriend";
+        String url = "http://localhost:8081/users/{id1}/deleteFriend";
         restTemplate.delete(url, id, userId);
     }
 
@@ -64,7 +64,7 @@ public class SecAccountService implements AccountClient{
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        String url = "http://localhost:8080/accounts/transfer?fromId={fromId}&toId={toId}&amount={amount}";
+        String url = "http://localhost:8081/accounts/transfer?fromId={fromId}&toId={toId}&amount={amount}";
         Map<String, Object> params = new HashMap<>();
         params.put("fromId", fromId);
         params.put("toId", toId);
@@ -79,7 +79,7 @@ public class SecAccountService implements AccountClient{
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        String url = "http://localhost:8080/accounts/{id}/withdraw";
+        String url = "http://localhost:8081/accounts/{id}/withdraw";
         restTemplate.put(url, amount, id);
         return ResponseEntity.ok("Success");
     }
@@ -90,7 +90,7 @@ public class SecAccountService implements AccountClient{
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        String url = "http://localhost:8080/accounts/{id}/put";
+        String url = "http://localhost:8081/accounts/{id}/put";
         restTemplate.put(url, amount, id);
         return ResponseEntity.ok("Success");
     }

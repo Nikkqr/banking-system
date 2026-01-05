@@ -1,6 +1,6 @@
 package com.bank.gateway.application.services;
 
-import com.bank.gateway.data.entities.AccountDTO;
+import com.bank.gateway.application.dto.AccountDTO;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;

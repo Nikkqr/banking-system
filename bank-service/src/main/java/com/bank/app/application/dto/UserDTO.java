@@ -1,6 +1,7 @@
 package com.bank.app.application.dto;
 
 import com.bank.app.data.entities.HairColors;
+import com.bank.app.data.entities.User;
 import lombok.Data;
 
 /**
@@ -23,12 +24,12 @@ public class UserDTO {
 
     public UserDTO() {}
 
-    public UserDTO(int id, String login, String name, int age, String gender, HairColors hairColor) {
-        this.id = id;
-        this.login = login;
-        this.name = name;
-        this.age = age;
-        this.gender = gender;
-        this.hairColor = hairColor.toString();
+    public UserDTO(User user) {
+        id = user.getId();
+        login = user.getLogin();
+        name = user.getName();
+        age = user.getAge();
+        gender = user.getGender();
+        hairColor = user.getHairColor().toString();
     }
 }

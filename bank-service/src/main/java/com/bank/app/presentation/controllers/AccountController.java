@@ -1,6 +1,5 @@
 package com.bank.app.presentation.controllers;
 import com.bank.app.application.dto.*;
-import com.bank.app.data.entities.Account;
 import com.bank.app.data.resultType.Result;
 import com.bank.app.data.resultType.ResultDescription;
 import com.bank.app.application.services.AccountService;
@@ -9,8 +8,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,7 +35,7 @@ public class AccountController {
                 request.getOwnerId()
         );
 
-        return ResponseEntity.ok(AccountDTOCreator.toDTO(res.getAccount()));
+        return ResponseEntity.ok(new AccountDTO(res.getAccount()));
     }
 
     @Operation(summary = "Получение баланса счёта по ID")
@@ -94,9 +91,7 @@ public class AccountController {
     })
     @GetMapping("/{id}/operation")
     public List<OperationDTO> operationHistory(@PathVariable int id, @RequestParam String type) {
-        return accountService.getOperationByTypeAndId(id, type).stream()
-                .map(OperationDTO::new)
-                .toList();
+        return accountService.getOperationByTypeAndId(id, type);
     }
 
     @Operation(summary = "Вывод всех счетов")
@@ -106,11 +101,7 @@ public class AccountController {
     })
     @GetMapping("/allAccounts")
     public List<AccountDTO> getAllAccounts() {
-        List<AccountDTO> ac = new ArrayList<>();
-        for(Account a : accountService.getAllAccounts()){
-            ac.add(AccountDTOCreator.toDTO(a));
-        }
-        return ac;
+        return accountService.getAllAccounts();
     }
 
 }

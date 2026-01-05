@@ -1,8 +1,8 @@
 package com.bank.gateway.presentation.controllers;
 
-import com.bank.gateway.data.entities.AccountDTO;
+import com.bank.gateway.application.dto.AccountDTO;
 import com.bank.gateway.data.entities.HairColor;
-import com.bank.gateway.data.entities.SecUserRequest;
+import com.bank.gateway.application.dto.SecUserRequest;
 import com.bank.gateway.application.services.AccountClient;
 import com.bank.gateway.application.services.UserClient;
 import io.swagger.v3.oas.annotations.Operation;

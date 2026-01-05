@@ -1,6 +1,7 @@
 package com.bank.app.application.services;
 
-import com.bank.app.application.dto.AccountDTOCreator;
+import com.bank.app.application.dto.AccountDTO;
+import com.bank.app.application.dto.OperationDTO;
 import com.bank.app.data.entities.Account;
 import com.bank.app.data.entities.Operation;
 import com.bank.app.data.entities.User;
@@ -47,7 +48,7 @@ public class AccountService
     {
         Account account = new Account(balance, login, ownerId);
         repo.createAccount(account);
-        producer.sendAccountEvent(String.valueOf(account.getId()), AccountDTOCreator.toDTO(account));
+        producer.sendAccountEvent(String.valueOf(account.getId()), new AccountDTO(account));
         return new Result(ResultDescription.TheAccountHasBeenSuccessfullyCreated, account);
     }
 
@@ -75,7 +76,7 @@ public class AccountService
         account.setBalance(resultAmountOfMoney);
         account.addOperation(new Operation("Put", amountOfMoney, account));
         repo.updateAccount(account);
-        producer.sendAccountEvent(String.valueOf(account.getId()), AccountDTOCreator.toDTO(account));
+        producer.sendAccountEvent(String.valueOf(account.getId()), new AccountDTO(account));
         return new Result(ResultDescription.TheMoneyIsPutToAccount);
     }
 
@@ -98,7 +99,7 @@ public class AccountService
         account.setBalance(resultAmountOfMoney);
         account.addOperation(new Operation("Withdraw", amountOfMoney, account));
         repo.updateAccount(account);
-        producer.sendAccountEvent(String.valueOf(account.getId()), AccountDTOCreator.toDTO(account));
+        producer.sendAccountEvent(String.valueOf(account.getId()), new AccountDTO(account));
         return new Result(ResultDescription.TheMoneyIsWithdrawToAccount);
     }
 
@@ -174,8 +175,8 @@ public class AccountService
             repo.updateAccount(toAccount);
         }
 
-        producer.sendAccountEvent(String.valueOf(fromAccount.getId()), AccountDTOCreator.toDTO(fromAccount));
-        producer.sendAccountEvent(String.valueOf(toAccount.getId()), AccountDTOCreator.toDTO(toAccount));
+        producer.sendAccountEvent(String.valueOf(fromAccount.getId()), new AccountDTO(fromAccount));
+        producer.sendAccountEvent(String.valueOf(toAccount.getId()), new AccountDTO(toAccount));
         return new Result(ResultDescription.TheMoneyIsPutToAccount);
     }
 
@@ -185,23 +186,21 @@ public class AccountService
      * @param type тип операции
      * @return список операций
      */
-    public List<Operation> getOperationByTypeAndId(int id, String type) {
-        List<Operation> operations = new ArrayList<>();
-        for(Operation o : repo.getAccountById(id).getAccount().getOperationHistory()) {
-            if(o.getName().equals(type)) {
-                operations.add(o);
-            }
-        }
-        return operations;
+    public List<OperationDTO> getOperationByTypeAndId(int id, String type) {
+        return repo.getAccountById(id)
+                .getAccount()
+                .getOperationHistory()
+                .stream()
+                .filter(x -> x.getName().equals(type))
+                .map(OperationDTO::new)
+                .toList();
     }
 
     /**
      * Получение всех пользователей
      * @return список пользователей
      */
-    public List<Account> getAllAccounts() {
-        List<Account> accounts = new ArrayList<>();
-        accounts.addAll(repo.findAll());
-        return accounts;
+    public List<AccountDTO> getAllAccounts() {
+        return new ArrayList<>(repo.findAll().stream().map(AccountDTO::new).toList());
     }
 }

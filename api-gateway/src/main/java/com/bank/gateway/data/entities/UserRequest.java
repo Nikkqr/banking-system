@@ -1,5 +1,6 @@
 package com.bank.gateway.data.entities;
 
+import com.bank.gateway.application.dto.SecUserRequest;
 import lombok.Data;
 
 @Data
@@ -15,10 +16,11 @@ public class UserRequest {
 
     private HairColor hairColor;
 
-    public UserRequest(String login, String name, int age, String gender, HairColor hairColor) {
-        this.login = login;
-        this.name = name;
-        this.age = age;
-        this.gender = gender;
+    public UserRequest(SecUserRequest user) {
+        login = user.getLogin();
+        name = user.getName();
+        age = user.getAge();
+        gender = user.getGender();
+        hairColor = user.getHairColor();
     }
 }

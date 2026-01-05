@@ -40,7 +40,7 @@ public class UserController {
                 request.getHairColor()
         );
 
-        return ResponseEntity.ok(UserDTOCreator.toDTO(res.getUser()));
+        return ResponseEntity.ok(new UserDTO(res.getUser()));
     }
 
     @Operation(summary = "Получить информацию о пользователе по ID")
@@ -80,10 +80,7 @@ public class UserController {
     })
     @GetMapping("/{userId}/friends")
     public List<UserDTO> getFriends(@PathVariable int userId) {
-        return userService.getFriends(userId)
-                .stream()
-                .map(UserDTOCreator::toDTO)
-                .toList();
+        return userService.getFriends(userId);
     }
 
     @Operation(summary = "Вывод пользователей отфильтрованных по цвету волос или полу")
@@ -93,8 +90,6 @@ public class UserController {
     })
     @GetMapping("/filter")
     public List<UserDTO> filterUsers(@RequestParam(required = false) HairColors hairColor, @RequestParam(required = false) String gender) {
-        return userService.getUsersByHairColorAndGender(hairColor, gender).stream()
-                .map(UserDTOCreator::toDTO)
-                .toList();
+        return userService.getUsersByHairColorAndGender(hairColor, gender);
     }
 }

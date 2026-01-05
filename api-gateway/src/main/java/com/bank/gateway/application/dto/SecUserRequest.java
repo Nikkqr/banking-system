@@ -1,5 +1,7 @@
-package com.bank.gateway.data.entities;
+package com.bank.gateway.application.dto;
 
+import com.bank.gateway.data.entities.HairColor;
+import com.bank.gateway.data.entities.Role;
 import lombok.Data;
 
 @Data

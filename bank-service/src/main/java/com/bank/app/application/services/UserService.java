@@ -1,6 +1,6 @@
 package com.bank.app.application.services;
 
-import com.bank.app.application.dto.UserDTOCreator;
+import com.bank.app.application.dto.UserDTO;
 import com.bank.app.data.entities.Friends;
 import com.bank.app.data.entities.HairColors;
 import com.bank.app.data.entities.User;
@@ -46,7 +46,7 @@ public class UserService
     {
         User user = new User(login, name, age, gender, hairColor);
         userRepo.createUser(user);
-        producer.sendUserEvent(String.valueOf(user.getId()), UserDTOCreator.toDTO(user));
+        producer.sendUserEvent(String.valueOf(user.getId()), new UserDTO(user));
         return new Result(ResultDescription.TheUserHasBeenSuccessfullyCreated, user);
 
     }
@@ -75,7 +75,7 @@ public class UserService
         User user2 = userRepo.getUserById(id2).getUser();
 
         user1.addFriend(user2);
-        producer.sendUserEvent(String.valueOf(user1.getId()), UserDTOCreator.toDTO(user1));
+        producer.sendUserEvent(String.valueOf(user1.getId()), new UserDTO(user1));
         return new Result(ResultDescription.Success);
     }
 
@@ -92,7 +92,7 @@ public class UserService
         User user2 = userRepo.getUserById(id2).getUser();
 
         user1.removeFriend(user2);
-        producer.sendUserEvent(String.valueOf(user1.getId()), UserDTOCreator.toDTO(user1));
+        producer.sendUserEvent(String.valueOf(user1.getId()), new UserDTO(user1));
         return new Result(ResultDescription.Success);
     }
 
@@ -101,18 +101,14 @@ public class UserService
      * @param id ид пользователя
      * @return найденный друг
      */
-    public List<User> getFriends(int id) {
-        Result userResult = userRepo.getUserById(id);
-        User user = userResult.getUser();
-        List<Friends> userFriends = user.getFriends();
-        List<User> friends = new ArrayList<>();
-
-        for (Friends fr : userFriends) {
-            friends.add(fr.getFriend());
-        }
-
-        return friends;
-
+    public List<UserDTO> getFriends(int id) {
+        return userRepo.getUserById(id)
+                .getUser()
+                .getFriends()
+                .stream()
+                .map(Friends::getFriend)
+                .map(UserDTO::new)
+                .toList();
     }
 
     /**
@@ -121,10 +117,11 @@ public class UserService
      * @param gender пол
      * @return список пользователей
      */
-    public List<User> getUsersByHairColorAndGender(HairColors hairColor, String gender) {
+    public List<UserDTO> getUsersByHairColorAndGender(HairColors hairColor, String gender) {
         return userRepo.findAll().stream()
                 .filter(u -> (hairColor == null || u.getHairColor().equals(hairColor)))
                 .filter(u -> (gender == null || u.getGender().equals(gender)))
+                .map(UserDTO::new)
                 .toList();
 
     }

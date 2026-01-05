@@ -1,4 +1,4 @@
-package com.bank.gateway.data.entities;
+package com.bank.gateway.application.dto;
 
 import lombok.Data;
 
