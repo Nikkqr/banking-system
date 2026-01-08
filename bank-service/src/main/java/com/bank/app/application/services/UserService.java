@@ -1,12 +1,13 @@
 package com.bank.app.application.services;
 
+import com.bank.app.application.dto.HairColorsDTO;
 import com.bank.app.application.dto.UserDTO;
+import com.bank.app.application.exception.UserAlreadyExistsException;
+import com.bank.app.application.exception.UserNotFoundException;
 import com.bank.app.data.entities.Friends;
 import com.bank.app.data.entities.HairColors;
 import com.bank.app.data.entities.User;
 import com.bank.app.data.repository.UserRepository;
-import com.bank.app.data.resultType.Result;
-import com.bank.app.data.resultType.ResultDescription;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -42,13 +43,16 @@ public class UserService
      * @param hairColor - цвет волос
      * @return результат
      */
-    public Result createUser(String login, String name, int age, String gender, HairColors hairColor)
+    public UserDTO createUser(String login, String name, int age, String gender, HairColors hairColor)
     {
-        User user = new User(login, name, age, gender, hairColor);
-        userRepo.createUser(user);
-        producer.sendUserEvent(String.valueOf(user.getId()), new UserDTO(user));
-        return new Result(ResultDescription.TheUserHasBeenSuccessfullyCreated, user);
+        if (userRepo.existsByLogin(login)){
+            throw new UserAlreadyExistsException("User with login '" + login + "' already exists");
+        }
 
+        User user = new User(login, name, age, gender, hairColor);
+        User saved = userRepo.save(user);
+        producer.sendUserEvent(String.valueOf(user.getId()), new UserDTO(user));
+        return new UserDTO(saved);
     }
 
     /**
@@ -56,44 +60,45 @@ public class UserService
      * @param id ид
      * @return результат операции
      */
-    public Result userInformation(int id)
+    public UserDTO userInformation(int id)
     {
-        User user = userRepo.getUserById(id).getUser();
-        return new Result(ResultDescription.InformationOfTheUseSuccessfullyPrinted, user);
+        User user = userRepo.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with id=" + id + " not found"));
+        return new UserDTO(user);
     }
 
     /**
      * Метод для добавления пользователя в друзья
      * @param id1 ид основного пользователя
      * @param id2 ид добавляемого пользователя
-     * @return результат операции
      */
     @Transactional
-    public Result addFriendForUser(int id1, int id2)
+    public void addFriendForUser(int id1, int id2)
     {
-        User user1 = userRepo.getUserById(id1).getUser();
-        User user2 = userRepo.getUserById(id2).getUser();
+        User user1 = userRepo.findById(id1)
+                .orElseThrow(() -> new UserNotFoundException("User with id=" + id1 + " not found"));
+        User user2 = userRepo.findById(id2)
+                .orElseThrow(() -> new UserNotFoundException("User with id=" + id2 + " not found"));
 
         user1.addFriend(user2);
         producer.sendUserEvent(String.valueOf(user1.getId()), new UserDTO(user1));
-        return new Result(ResultDescription.Success);
     }
 
     /**
      * Метод для удаления пользователя из друзей
      * @param id1 ид основного пользователя
      * @param id2 ид удаляемого пользователя
-     * @return результат операции
      */
     @Transactional
-    public Result deleteUserFriend(int id1, int id2)
+    public void deleteUserFriend(int id1, int id2)
     {
-        User user1 = userRepo.getUserById(id1).getUser();
-        User user2 = userRepo.getUserById(id2).getUser();
+        User user1 = userRepo.findById(id1)
+                .orElseThrow(() -> new UserNotFoundException("User with id=" + id1 + " not found"));
+        User user2 = userRepo.findById(id2)
+                .orElseThrow(() -> new UserNotFoundException("User with id=" + id2 + " not found"));
 
         user1.removeFriend(user2);
         producer.sendUserEvent(String.valueOf(user1.getId()), new UserDTO(user1));
-        return new Result(ResultDescription.Success);
     }
 
     /**
@@ -102,10 +107,10 @@ public class UserService
      * @return найденный друг
      */
     public List<UserDTO> getFriends(int id) {
-        return userRepo.getUserById(id)
-                .getUser()
-                .getFriends()
-                .stream()
+        User user = userRepo.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User with id=" + id + " not found"));
+
+        return user.getFriends().stream()
                 .map(Friends::getFriend)
                 .map(UserDTO::new)
                 .toList();
@@ -113,11 +118,13 @@ public class UserService
 
     /**
      * Метод для получения пользователей отфильтрованных по цвету волос и полу
-     * @param hairColor цвет волос
+     * @param hairColorDTO цвет волос
      * @param gender пол
      * @return список пользователей
      */
-    public List<UserDTO> getUsersByHairColorAndGender(HairColors hairColor, String gender) {
+    public List<UserDTO> getUsersByHairColorAndGender(HairColorsDTO hairColorDTO, String gender) {
+        HairColors hairColor = (hairColorDTO != null) ? HairColorsDTO.toDomain(hairColorDTO) : null;
+
         return userRepo.findAll().stream()
                 .filter(u -> (hairColor == null || u.getHairColor().equals(hairColor)))
                 .filter(u -> (gender == null || u.getGender().equals(gender)))

@@ -1,8 +1,6 @@
 package com.bank.app.presentation.controllers;
 
 import com.bank.app.application.dto.*;
-import com.bank.app.data.entities.HairColors;
-import com.bank.app.data.resultType.Result;
 import com.bank.app.application.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,7 +30,7 @@ public class UserController {
     })
     @PostMapping("")
     public ResponseEntity<UserDTO> createUser(@RequestBody CreateUserRequest request) {
-        Result res = userService.createUser(
+        UserDTO result = userService.createUser(
                 request.getLogin(),
                 request.getName(),
                 request.getAge(),
@@ -40,7 +38,7 @@ public class UserController {
                 request.getHairColor()
         );
 
-        return ResponseEntity.ok(new UserDTO(res.getUser()));
+        return ResponseEntity.ok(result);
     }
 
     @Operation(summary = "Получить информацию о пользователе по ID")
@@ -49,8 +47,9 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
     @GetMapping("/{id}")
-    public String getUserInfo(@PathVariable int id) {
-        return userService.userInformation(id).getUser().toString();
+    public ResponseEntity<UserDTO> getUserInfo(@PathVariable int id) {
+         UserDTO user = userService.userInformation(id);
+        return ResponseEntity.ok(user);
     }
 
     @Operation(summary = "Добавить друга пользователю")
@@ -59,8 +58,9 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
     @PutMapping("/{id1}/addFriend")
-    public void addFriendForUser(@PathVariable int id1, @RequestBody  int id2) {
+    public ResponseEntity<Void> addFriendForUser(@PathVariable int id1, @RequestBody  int id2) {
         userService.addFriendForUser(id1, id2);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Удалить друга у пользователя")
@@ -69,8 +69,9 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Пользователь не найден")
     })
     @DeleteMapping("/{id1}/deleteFriend")
-    public void deleteUserFriend(@PathVariable int id1, @RequestBody int id2) {
+    public ResponseEntity<Void> deleteUserFriend(@PathVariable int id1, @RequestBody int id2) {
         userService.deleteUserFriend(id1, id2);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Поиск друзей по айди")
@@ -79,8 +80,13 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Друг не найден")
     })
     @GetMapping("/{userId}/friends")
-    public List<UserDTO> getFriends(@PathVariable int userId) {
-        return userService.getFriends(userId);
+    public ResponseEntity<List<UserDTO>> getFriends(@PathVariable int userId) {
+        List<UserDTO> users = userService.getFriends(userId);
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(users);
     }
 
     @Operation(summary = "Вывод пользователей отфильтрованных по цвету волос или полу")
@@ -89,7 +95,12 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "Пользователи не найдены")
     })
     @GetMapping("/filter")
-    public List<UserDTO> filterUsers(@RequestParam(required = false) HairColors hairColor, @RequestParam(required = false) String gender) {
-        return userService.getUsersByHairColorAndGender(hairColor, gender);
+    public ResponseEntity<List<UserDTO>> filterUsers(@RequestParam(required = false) HairColorsDTO hairColor, @RequestParam(required = false) String gender) {
+        List<UserDTO> users = userService.getUsersByHairColorAndGender(hairColor, gender);
+        if (users.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(users);
     }
 }

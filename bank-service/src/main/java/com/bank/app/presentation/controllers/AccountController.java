@@ -1,7 +1,6 @@
 package com.bank.app.presentation.controllers;
+
 import com.bank.app.application.dto.*;
-import com.bank.app.data.resultType.Result;
-import com.bank.app.data.resultType.ResultDescription;
 import com.bank.app.application.services.AccountService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,13 +28,13 @@ public class AccountController {
     })
     @PostMapping("")
     public ResponseEntity<AccountDTO> createAccount(@RequestBody CreateAccountRequest request) {
-        Result res = accountService.createAccount(
+        AccountDTO res = accountService.createAccount(
                 request.getBalance(),
                 request.getLogin(),
                 request.getOwnerId()
         );
 
-        return ResponseEntity.ok(new AccountDTO(res.getAccount()));
+        return ResponseEntity.ok(res);
     }
 
     @Operation(summary = "Получение баланса счёта по ID")
@@ -44,8 +43,9 @@ public class AccountController {
             @ApiResponse(responseCode = "404", description = "Счёт не найден")
     })
     @GetMapping("/{id}/balance")
-    public double checkBalance(@PathVariable int id) {
-        return accountService.checkBalance(id).getInformation();
+    public ResponseEntity<Double> checkBalance(@PathVariable int id) {
+        Double balance = accountService.checkBalance(id);
+        return ResponseEntity.ok(balance);
     }
 
     @Operation(summary = "Пополнение баланса счёта")
@@ -65,12 +65,9 @@ public class AccountController {
             @ApiResponse(responseCode = "404", description = "Счёт не найден")
     })
     @PutMapping("/{id}/withdraw")
-    public String withdrawMoney(@PathVariable int id, @RequestBody double amount) {
-        Result res = accountService.withdrawMoney(id, amount);
-        if(res.getStatus().equals(ResultDescription.ThereIsNotEnoughMoneyInTheAccount)){
-            return "There is not enough money in the account";
-        }
-        return "Money withdrawn successfully";
+    public ResponseEntity<Void> withdrawMoney(@PathVariable int id, @RequestBody double amount) {
+        accountService.withdrawMoney(id, amount);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Перевод денег между счетами")
@@ -80,8 +77,9 @@ public class AccountController {
             @ApiResponse(responseCode = "404", description = "Один из счетов не найден")
     })
     @PutMapping("/transfer")
-    public void transferMoney(@RequestParam int fromId, @RequestParam int toId, @RequestParam double amount) {
+    public ResponseEntity<Void> transferMoney(@RequestParam int fromId, @RequestParam int toId, @RequestParam double amount) {
         accountService.moneyTransaction(fromId, toId, amount);
+        return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Получение операций конкретного типа по счёту ")
@@ -90,8 +88,13 @@ public class AccountController {
             @ApiResponse(responseCode = "404", description = "Операции не найдены")
     })
     @GetMapping("/{id}/operation")
-    public List<OperationDTO> operationHistory(@PathVariable int id, @RequestParam String type) {
-        return accountService.getOperationByTypeAndId(id, type);
+    public ResponseEntity<List<OperationDTO>> operationHistory(@PathVariable int id, @RequestParam String type) {
+        List<OperationDTO> operations = accountService.getOperationByTypeAndId(id, type);
+        if (operations.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(operations);
     }
 
     @Operation(summary = "Вывод всех счетов")
@@ -100,8 +103,13 @@ public class AccountController {
             @ApiResponse(responseCode = "404", description = "Счета не найдены")
     })
     @GetMapping("/allAccounts")
-    public List<AccountDTO> getAllAccounts() {
-        return accountService.getAllAccounts();
+    public ResponseEntity<List<AccountDTO>> getAllAccounts() {
+        List<AccountDTO> accounts = accountService.getAllAccounts();
+        if (accounts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(accounts);
     }
 
 }
