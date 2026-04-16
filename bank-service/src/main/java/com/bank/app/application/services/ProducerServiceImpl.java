@@ -1,15 +1,15 @@
 package com.bank.app.application.services;
 
 import com.google.gson.Gson;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ProducerServiceImpl implements ProducerService {
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaOperations<String, String> kafkaTemplate;
 
-    public ProducerServiceImpl(KafkaTemplate<String, String> kafkaTemplate) {
+    public ProducerServiceImpl(KafkaOperations<String, String> kafkaTemplate) {
         this.kafkaTemplate = kafkaTemplate;
     }
 

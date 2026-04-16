@@ -15,7 +15,7 @@ import static org.mockito.Mockito.verify;
 public class ProducerServiceTest {
 
     @Mock
-    private KafkaTemplate<String, String> kafkaTemplate;
+    private org.springframework.kafka.core.KafkaOperations<String, String> kafkaTemplate;
 
     @Mock
     private ProducerService producer;
