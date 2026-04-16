@@ -33,7 +33,7 @@ public class SecUserService implements UserClient {
     public ResponseEntity<String> createUser(SecUserRequest userRequest) {
         SecurityUser securityUser = new SecurityUser(userRequest.getName(), passwordEncoder.encode(userRequest.getPassword()),
                 userRequest.getRole());
-        userRepository.createUser(securityUser);
+        userRepository.save(securityUser);
         String url = "http://localhost:8081/users";
         UserRequest uReq = new UserRequest(userRequest);
         ResponseEntity<String> response = restTemplate.postForEntity(url, uReq, String.class);

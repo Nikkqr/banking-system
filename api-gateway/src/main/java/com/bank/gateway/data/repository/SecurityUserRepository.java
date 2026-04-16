@@ -8,18 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface SecurityUserRepository extends JpaRepository<SecurityUser, Integer> {
-
-    default void createUser(SecurityUser user) {
-        save(user);
-    }
-
     Optional<SecurityUser> findByUsername(String username);
-
-    default void updateUser(SecurityUser user) {
-        save(user);
-    }
-
-    default void deleteUser(SecurityUser user) {
-        delete(user);
-    }
 }

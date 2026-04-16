@@ -161,8 +161,8 @@ public class AccountService
                 throw new InsufficientFundsException("Insufficient funds on the account with id=" + fromAccount);
             }
 
-            fromAccount.setBalance(currentBalanceTo - amountOfMoney - percentage3);
-            toAccount.setBalance(currentBalanceFrom + amountOfMoney);
+            fromAccount.setBalance(currentBalanceFrom - amountOfMoney - percentage3);
+            toAccount.setBalance(currentBalanceTo + amountOfMoney);
             toAccount.addOperation(new Operation("Put", amountOfMoney, toAccount));
             fromAccount.addOperation(new Operation("Withdraw", amountOfMoney + percentage3, fromAccount));
             repo.save(fromAccount);
@@ -176,8 +176,8 @@ public class AccountService
                 throw new InsufficientFundsException("Insufficient funds on the account with id=" + fromAccount);
             }
 
-            fromAccount.setBalance(currentBalanceTo - amountOfMoney - percentage10);
-            toAccount.setBalance(currentBalanceFrom + amountOfMoney);
+            fromAccount.setBalance(currentBalanceFrom - amountOfMoney - percentage10);
+            toAccount.setBalance(currentBalanceTo + amountOfMoney);
             toAccount.addOperation(new Operation("Put", amountOfMoney, toAccount));
             fromAccount.addOperation(new Operation("Withdraw", amountOfMoney + percentage10, fromAccount));
             repo.save(fromAccount);
