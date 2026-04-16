@@ -4,8 +4,6 @@ import com.bank.app.application.dto.HairColorsDTO;
 import com.bank.app.application.dto.UserDTO;
 import com.bank.app.application.exception.UserAlreadyExistsException;
 import com.bank.app.application.exception.UserNotFoundException;
-import com.bank.app.application.services.ProducerService;
-import com.bank.app.application.services.UserService;
 import com.bank.app.data.entities.HairColors;
 import com.bank.app.data.entities.User;
 import com.bank.app.data.repository.UserRepository;
@@ -36,7 +34,7 @@ public class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(userRepo, producer);
+        userService = new UserServiceImpl(userRepo, producer);
     }
 
     @Test
@@ -148,4 +146,3 @@ public class UserServiceTest {
         assertEquals(3, res2.size());
     }
 }
-

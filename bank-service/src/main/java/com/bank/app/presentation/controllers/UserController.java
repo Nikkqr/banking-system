@@ -2,6 +2,7 @@ package com.bank.app.presentation.controllers;
 
 import com.bank.app.application.dto.*;
 import com.bank.app.application.services.UserService;
+import com.bank.app.application.services.UserServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -19,7 +20,7 @@ public class UserController {
 
     private final UserService userService;
 
-    public UserController(UserService userService) {
+    public UserController(UserServiceImpl userService) {
         this.userService = userService;
     }
 

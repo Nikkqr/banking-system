@@ -1,15 +1,15 @@
 package com.bank.app.application.services;
 
-import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.kafka.core.KafkaTemplate;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 public class ProducerServiceTest {
@@ -17,9 +17,12 @@ public class ProducerServiceTest {
     @Mock
     private KafkaTemplate<String, String> kafkaTemplate;
 
+    @Mock
+    private ProducerService producer;
+
     @Test
     void sendUserEvent_and_sendAccountEvent() {
-        ProducerService producer = new ProducerService(kafkaTemplate);
+        producer = new ProducerServiceImpl(kafkaTemplate);
 
         Object data = new Object();
         producer.sendUserEvent("1", data);
@@ -29,4 +32,3 @@ public class ProducerServiceTest {
         verify(kafkaTemplate, times(1)).send(eq("account-topic"), eq("2"), anyString());
     }
 }
-

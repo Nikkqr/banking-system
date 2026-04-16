@@ -4,7 +4,6 @@ import com.bank.app.application.dto.AccountDTO;
 import com.bank.app.application.dto.OperationDTO;
 import com.bank.app.application.exception.AccountNotFoundException;
 import com.bank.app.application.exception.InsufficientFundsException;
-import com.bank.app.application.exception.UserNotFoundException;
 import com.bank.app.data.entities.Account;
 import com.bank.app.data.entities.Operation;
 import com.bank.app.data.entities.User;
@@ -38,7 +37,7 @@ public class AccountServiceTest {
 
     @BeforeEach
     void setUp() {
-        accountService = new AccountService(repo, userRepo, producer);
+        accountService = new AccountServiceImpl(repo, userRepo, producer);
     }
 
     @Test
@@ -182,4 +181,3 @@ public class AccountServiceTest {
         assertEquals(1, all.size());
     }
 }
-

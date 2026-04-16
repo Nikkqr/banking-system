@@ -2,6 +2,7 @@ package com.bank.app.presentation.controllers;
 
 import com.bank.app.application.dto.*;
 import com.bank.app.application.services.AccountService;
+import com.bank.app.application.services.AccountServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -17,7 +18,7 @@ import java.util.List;
 public class AccountController {
     private final AccountService accountService;
 
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountServiceImpl accountService) {
         this.accountService = accountService;
     }
 
