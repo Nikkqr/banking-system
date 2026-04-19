@@ -9,9 +9,9 @@ import com.bank.app.data.entities.Operation;
 import com.bank.app.data.entities.User;
 import com.bank.app.data.repository.AccountRepository;
 import com.bank.app.data.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -25,7 +25,7 @@ import static org.mockito.Mockito.*;
 public class AccountServiceTest {
 
     @Mock
-    private AccountRepository repo;
+    private AccountRepository accountRepo;
 
     @Mock
     private UserRepository userRepo;
@@ -33,16 +33,12 @@ public class AccountServiceTest {
     @Mock
     private ProducerService producer;
 
-    private AccountService accountService;
-
-    @BeforeEach
-    void setUp() {
-        accountService = new AccountServiceImpl(repo, userRepo, producer);
-    }
+    @InjectMocks
+    private AccountServiceImpl accountService;
 
     @Test
     void createAccount_success() {
-        when(repo.save(any(Account.class))).thenAnswer(invocation -> {
+        when(accountRepo.save(any(Account.class))).thenAnswer(invocation -> {
             Account a = invocation.getArgument(0);
             Account saved = new Account(a.getBalance(), a.getLogin(), a.getOwnerId());
             saved.setId(10);
@@ -53,7 +49,7 @@ public class AccountServiceTest {
 
         assertNotNull(dto);
         assertEquals(10, dto.getId());
-        verify(repo, times(1)).save(any(Account.class));
+        verify(accountRepo, times(1)).save(any(Account.class));
         verify(producer, times(1)).sendAccountEvent(anyString(), any(AccountDTO.class));
     }
 
@@ -61,12 +57,12 @@ public class AccountServiceTest {
     void checkBalance_success_and_notFound() {
         Account acc = new Account(50.0, "l", 1);
         acc.setId(2);
-        when(repo.findById(2)).thenReturn(Optional.of(acc));
+        when(accountRepo.findById(2)).thenReturn(Optional.of(acc));
 
         Double b = accountService.checkBalance(2);
         assertEquals(50.0, b);
 
-        when(repo.findById(99)).thenReturn(Optional.empty());
+        when(accountRepo.findById(99)).thenReturn(Optional.empty());
         assertThrows(AccountNotFoundException.class, () -> accountService.checkBalance(99));
     }
 
@@ -74,17 +70,17 @@ public class AccountServiceTest {
     void putMoney_and_withdrawMoney_success_and_insufficient() {
         Account acc = new Account(100.0, "l", 1);
         acc.setId(3);
-        when(repo.findById(3)).thenReturn(Optional.of(acc));
+        when(accountRepo.findById(3)).thenReturn(Optional.of(acc));
 
         accountService.putMoney(3, 50.0);
         assertEquals(150.0, acc.getBalance());
-        verify(repo, times(1)).save(acc);
+        verify(accountRepo, times(1)).save(acc);
         verify(producer, times(1)).sendAccountEvent(anyString(), any(AccountDTO.class));
 
         // withdraw success
         accountService.withdrawMoney(3, 30.0);
         assertEquals(120.0, acc.getBalance());
-        verify(repo, times(2)).save(acc);
+        verify(accountRepo, times(2)).save(acc);
 
         // withdraw insufficient
         assertThrows(InsufficientFundsException.class, () -> accountService.withdrawMoney(3, 1000.0));
@@ -103,15 +99,15 @@ public class AccountServiceTest {
         Account to = new Account(50.0, "same", 1);
         to.setId(2);
 
-        when(repo.findById(1)).thenReturn(Optional.of(from));
-        when(repo.findById(2)).thenReturn(Optional.of(to));
+        when(accountRepo.findById(1)).thenReturn(Optional.of(from));
+        when(accountRepo.findById(2)).thenReturn(Optional.of(to));
         when(userRepo.findById(from.getOwnerId())).thenReturn(Optional.of(new User("u","U",20,"M", null)));
 
         accountService.moneyTransaction(1, 2, 100.0);
 
         assertEquals(100.0, from.getBalance());
         assertEquals(150.0, to.getBalance());
-        verify(repo, times(2)).save(any(Account.class));
+        verify(accountRepo, times(2)).save(any(Account.class));
         verify(producer, times(2)).sendAccountEvent(anyString(), any(AccountDTO.class));
     }
 
@@ -128,8 +124,8 @@ public class AccountServiceTest {
         Account to = new Account(20.0, "f", 11);
         to.setId(11);
 
-        when(repo.findById(10)).thenReturn(Optional.of(from));
-        when(repo.findById(11)).thenReturn(Optional.of(to));
+        when(accountRepo.findById(10)).thenReturn(Optional.of(from));
+        when(accountRepo.findById(11)).thenReturn(Optional.of(to));
         when(userRepo.findById(from.getOwnerId())).thenReturn(Optional.of(sender));
 
         accountService.moneyTransaction(10, 11, 50.0);
@@ -144,8 +140,8 @@ public class AccountServiceTest {
         from2.setId(20);
         Account to2 = new Account(10.0, "y", 21);
         to2.setId(21);
-        when(repo.findById(20)).thenReturn(Optional.of(from2));
-        when(repo.findById(21)).thenReturn(Optional.of(to2));
+        when(accountRepo.findById(20)).thenReturn(Optional.of(from2));
+        when(accountRepo.findById(21)).thenReturn(Optional.of(to2));
         when(userRepo.findById(from2.getOwnerId())).thenReturn(Optional.of(sender2));
 
         accountService.moneyTransaction(20, 21, 100.0);
@@ -158,8 +154,8 @@ public class AccountServiceTest {
         poor.setId(30);
         Account other = new Account(0.0, "o", 31);
         other.setId(31);
-        when(repo.findById(30)).thenReturn(Optional.of(poor));
-        when(repo.findById(31)).thenReturn(Optional.of(other));
+        when(accountRepo.findById(30)).thenReturn(Optional.of(poor));
+        when(accountRepo.findById(31)).thenReturn(Optional.of(other));
         when(userRepo.findById(poor.getOwnerId())).thenReturn(Optional.of(new User("p","P",20,"M", null)));
 
         assertThrows(InsufficientFundsException.class, () -> accountService.moneyTransaction(30, 31, 50.0));
@@ -172,11 +168,11 @@ public class AccountServiceTest {
         acc.addOperation(new Operation("Put", 10.0, acc));
         acc.addOperation(new Operation("Withdraw", 5.0, acc));
 
-        when(repo.findById(5)).thenReturn(Optional.of(acc));
+        when(accountRepo.findById(5)).thenReturn(Optional.of(acc));
         List<OperationDTO> puts = accountService.getOperationByTypeAndId(5, "Put");
         assertEquals(1, puts.size());
 
-        when(repo.findAll()).thenReturn(List.of(acc));
+        when(accountRepo.findAll()).thenReturn(List.of(acc));
         List<AccountDTO> all = accountService.getAllAccounts();
         assertEquals(1, all.size());
     }

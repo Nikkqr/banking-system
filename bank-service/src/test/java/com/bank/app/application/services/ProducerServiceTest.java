@@ -2,9 +2,9 @@ package com.bank.app.application.services;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.eq;
@@ -17,13 +17,11 @@ public class ProducerServiceTest {
     @Mock
     private org.springframework.kafka.core.KafkaOperations<String, String> kafkaTemplate;
 
-    @Mock
-    private ProducerService producer;
+    @InjectMocks
+    private ProducerServiceImpl producer;
 
     @Test
     void sendUserEvent_and_sendAccountEvent() {
-        producer = new ProducerServiceImpl(kafkaTemplate);
-
         Object data = new Object();
         producer.sendUserEvent("1", data);
         producer.sendAccountEvent("2", data);

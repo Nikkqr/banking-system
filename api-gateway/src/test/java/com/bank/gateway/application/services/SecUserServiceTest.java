@@ -6,10 +6,9 @@ import com.bank.gateway.data.entities.Role;
 import com.bank.gateway.data.entities.SecurityUser;
 import com.bank.gateway.data.entities.HairColor;
 import com.bank.gateway.data.repository.SecurityUserRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
@@ -38,20 +37,8 @@ public class SecUserServiceTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @InjectMocks
     private SecUserService service;
-
-    private SecurityContext originalContext;
-
-    @BeforeEach
-    void setUp() {
-        service = new SecUserService(userRepository, restTemplate, passwordEncoder);
-        originalContext = SecurityContextHolder.getContext();
-    }
-
-    @AfterEach
-    void tearDown() {
-        SecurityContextHolder.setContext(originalContext);
-    }
 
     @Test
     void createUser_savesSecurityUser_and_forwardsRequest() {
@@ -121,4 +108,3 @@ public class SecUserServiceTest {
         assertEquals("ACC123 operation-body", res.getBody());
     }
 }
-

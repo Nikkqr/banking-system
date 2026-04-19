@@ -21,7 +21,7 @@ import java.util.List;
 @Service
 public class AccountServiceImpl implements AccountService
 {
-    private final AccountRepository repo;
+    private final AccountRepository accountRepo;
 
     private final UserRepository userRepo;
 
@@ -34,7 +34,7 @@ public class AccountServiceImpl implements AccountService
      */
     public AccountServiceImpl(AccountRepository repository, UserRepository userRepository, ProducerService producer)
     {
-        repo = repository;
+        accountRepo = repository;
         userRepo = userRepository;
         this.producer = producer;
     }
@@ -48,7 +48,7 @@ public class AccountServiceImpl implements AccountService
     public AccountDTO createAccount(Double balance, String login, int ownerId)
     {
         Account account = new Account(balance, login, ownerId);
-        Account save = repo.save(account);
+        Account save = accountRepo.save(account);
         producer.sendAccountEvent(String.valueOf(account.getId()), new AccountDTO(account));
         return new AccountDTO(save);
     }
@@ -61,7 +61,7 @@ public class AccountServiceImpl implements AccountService
     public Double checkBalance(int id)
     {
 
-        Account account = repo.findById(id)
+        Account account = accountRepo.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("Account with id=" + id + " not found"));
 
         return account.getBalance();
@@ -74,13 +74,13 @@ public class AccountServiceImpl implements AccountService
      */
     public void putMoney(int id, double amountOfMoney)
     {
-        Account account = repo.findById(id)
+        Account account = accountRepo.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("Account with id=" + id + " not found"));
 
         double resultAmountOfMoney = account.getBalance() + amountOfMoney;
         account.setBalance(resultAmountOfMoney);
         account.addOperation(new Operation("Put", amountOfMoney, account));
-        repo.save(account);
+        accountRepo.save(account);
         producer.sendAccountEvent(String.valueOf(account.getId()), new AccountDTO(account));
     }
 
@@ -91,7 +91,7 @@ public class AccountServiceImpl implements AccountService
      */
     public void withdrawMoney(int id, double amountOfMoney)
     {
-        Account account = repo.findById(id)
+        Account account = accountRepo.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("Account with id=" + id + " not found"));
 
         double currentBalance = account.getBalance();
@@ -103,7 +103,7 @@ public class AccountServiceImpl implements AccountService
         double resultAmountOfMoney = currentBalance - amountOfMoney;
         account.setBalance(resultAmountOfMoney);
         account.addOperation(new Operation("Withdraw", amountOfMoney, account));
-        repo.save(account);
+        accountRepo.save(account);
         producer.sendAccountEvent(String.valueOf(account.getId()), new AccountDTO(account));
     }
 
@@ -125,10 +125,10 @@ public class AccountServiceImpl implements AccountService
      */
     public void moneyTransaction(int fromId, int toId, double amountOfMoney)
     {
-        Account fromAccount = repo.findById(fromId)
+        Account fromAccount = accountRepo.findById(fromId)
                 .orElseThrow(() -> new AccountNotFoundException("Account with id=" + fromId + " not found"));
 
-        Account toAccount = repo.findById(toId)
+        Account toAccount = accountRepo.findById(toId)
                 .orElseThrow(() -> new AccountNotFoundException("Account with id=" + toId + " not found"));
 
         User sender = userRepo.findById(fromAccount.getOwnerId())
@@ -150,8 +150,8 @@ public class AccountServiceImpl implements AccountService
             fromAccount.setBalance(currentBalanceFrom - amountOfMoney);
             toAccount.addOperation(new Operation("Put", amountOfMoney, toAccount));
             fromAccount.addOperation(new Operation("Withdraw", amountOfMoney, fromAccount));
-            repo.save(fromAccount);
-            repo.save(toAccount);
+            accountRepo.save(fromAccount);
+            accountRepo.save(toAccount);
         }
 
         else if (sender.isFriend(toAccount.getLogin()))
@@ -165,8 +165,8 @@ public class AccountServiceImpl implements AccountService
             toAccount.setBalance(currentBalanceTo + amountOfMoney);
             toAccount.addOperation(new Operation("Put", amountOfMoney, toAccount));
             fromAccount.addOperation(new Operation("Withdraw", amountOfMoney + percentage3, fromAccount));
-            repo.save(fromAccount);
-            repo.save(toAccount);
+            accountRepo.save(fromAccount);
+            accountRepo.save(toAccount);
         }
 
         else
@@ -180,8 +180,8 @@ public class AccountServiceImpl implements AccountService
             toAccount.setBalance(currentBalanceTo + amountOfMoney);
             toAccount.addOperation(new Operation("Put", amountOfMoney, toAccount));
             fromAccount.addOperation(new Operation("Withdraw", amountOfMoney + percentage10, fromAccount));
-            repo.save(fromAccount);
-            repo.save(toAccount);
+            accountRepo.save(fromAccount);
+            accountRepo.save(toAccount);
         }
 
         producer.sendAccountEvent(String.valueOf(fromAccount.getId()), new AccountDTO(fromAccount));
@@ -195,7 +195,7 @@ public class AccountServiceImpl implements AccountService
      * @return список операций
      */
     public List<OperationDTO> getOperationByTypeAndId(int id, String type) {
-        Account account = repo.findById(id)
+        Account account = accountRepo.findById(id)
                 .orElseThrow(() -> new AccountNotFoundException("Account with id=" + id + " not found"));
 
         return account.getOperationHistory()
@@ -210,6 +210,6 @@ public class AccountServiceImpl implements AccountService
      * @return список счетов
      */
     public List<AccountDTO> getAllAccounts() {
-        return new ArrayList<>(repo.findAll().stream().map(AccountDTO::new).toList());
+        return new ArrayList<>(accountRepo.findAll().stream().map(AccountDTO::new).toList());
     }
 }

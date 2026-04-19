@@ -7,9 +7,9 @@ import com.bank.app.application.exception.UserNotFoundException;
 import com.bank.app.data.entities.HairColors;
 import com.bank.app.data.entities.User;
 import com.bank.app.data.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -30,12 +30,8 @@ public class UserServiceTest {
     @Mock
     private ProducerService producer;
 
-    private UserService userService;
-
-    @BeforeEach
-    void setUp() {
-        userService = new UserServiceImpl(userRepo, producer);
-    }
+    @InjectMocks
+    private UserServiceImpl userService;
 
     @Test
     void createUser_success() {
