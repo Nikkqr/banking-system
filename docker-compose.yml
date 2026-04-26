@@ -1,0 +1,88 @@
+services:
+  db_api_gateway:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: db_api_gateway
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db_api_gateway_data:/var/lib/postgresql/data
+
+  db_bank_service:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: db_bank_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db_bank_service_data:/var/lib/postgresql/data
+
+  db_event_storage:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: db_event_storage
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db_event_storage_data:/var/lib/postgresql/data
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    depends_on:
+      - db_api_gateway
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db_api_gateway:5432/db_api_gateway
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8081:9090"
+    restart: always
+
+  bank-service:
+    build:
+      context: ./bank-service
+    depends_on:
+      - db_bank_service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db_bank_service:5432/db_bank_service
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+    restart: always
+
+  event-storage:
+    build:
+      context: ./event-storage
+    depends_on:
+      - db_event_storage
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db_event_storage:5432/db_event_storage
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    restart: always
+
+volumes:
+  db_api_gateway_data:
+  db_bank_service_data:
+  db_event_storage_data:
